@@ -1,0 +1,45 @@
+---
+import { Container } from "../components/Container";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Welcome to Astro.">
+  <section class="flex flex-col items-center justify-center h-screen">
+    <Container>
+      <h2 class="text-4xl">PRUEBAS</h2>
+
+      <p class="flex flex-col">
+        <span id="name">Nombre: </span>
+        <span id="token">Token: </span>
+      </p>
+
+      <a
+        id="login"
+        class="min-w-48 p-3 border-[1px] rounded-xl border-gray-500 text-center"
+        href="">Login</a
+      >
+      <button
+        id="polizas"
+        class="min-w-48 p-3 border-[1px] rounded-xl border-gray-500 text-center"
+        >Obtener pólizas</button
+      >
+    </Container>
+  </section>
+</Layout>
+
+<script>
+  const loginButton = document.getElementById("login");
+  const polizaButton = document.getElementById("polizas");
+  const name = document.getElementById("name");
+  const token = document.getElementById("token");
+
+  loginButton?.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    name && (name.innerHTML = `Nombre: Victor`);
+    token && (token.innerHTML = `Token: fjalsdjfaljsdkfakldjfalsd`);
+  });
+  polizaButton?.addEventListener("click", () => {
+    console.log("polizas");
+  });
+</script>
