@@ -32,13 +32,13 @@ import { Container } from "../components/Container";
 
   const SSO_NEXT = import.meta.env.PUBLIC_SSO_NEXT;
 
-  const container = document.getElementById("container");
-  const loginButton = document.getElementById("login");
-  const policyButton = document.getElementById("policy");
-  const name = document.getElementById("name");
-  const token = document.getElementById("token");
-
   document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("container");
+    const loginButton = document.getElementById("login");
+    const policyButton = document.getElementById("policy");
+    const name = document.getElementById("name");
+    const token = document.getElementById("token");
+
     loginButton?.addEventListener("click", (e) => {
       e.preventDefault();
       if (typeof window !== "undefined") {
