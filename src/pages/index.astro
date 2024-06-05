@@ -1,9 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
 import { Container } from "../components/Container";
+import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Client">
+<Layout title="Web">
   <section class="flex flex-col items-center justify-center h-screen">
     <Container id="container">
       <h2 class="text-4xl">PRUEBAS</h2>
@@ -32,12 +32,30 @@ import { Container } from "../components/Container";
 
   const SSO_NEXT = import.meta.env.PUBLIC_SSO_NEXT;
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("container");
     const loginButton = document.getElementById("login");
     const policyButton = document.getElementById("policy");
-    const name = document.getElementById("name");
-    const token = document.getElementById("token");
+    const nameText = document.getElementById("name");
+    const tokenText = document.getElementById("token");
+
+    const userDataCookie = decodeURIComponent(getCookie("userData") ?? "");
+
+    if (userDataCookie !== "") {
+      const { name: userName, token: userToken } = JSON.parse(userDataCookie);
+      nameText && (nameText.innerHTML = `Nombre: ${userName}`);
+      tokenText && (tokenText.innerHTML = `Token: ${userToken}`);
+
+      // Confetti
+      const JSConfetti = await import("js-confetti").then(
+        (module) => module.default
+      );
+      const jsConfetti = new JSConfetti();
+      jsConfetti.addConfetti();
+    } else {
+      nameText && (nameText.innerHTML = "Nombre: ");
+      tokenText && (tokenText.innerHTML = "Token: ");
+    }
 
     loginButton?.addEventListener("click", (e) => {
       e.preventDefault();
@@ -48,32 +66,47 @@ import { Container } from "../components/Container";
 
     policyButton?.addEventListener("click", async () => {
       const elementId = "error-message";
+      const harcodeRut = "17943944-1";
       const previousNode = document.getElementById(elementId);
 
-      getPolicyByRut("")
+      if (userDataCookie === "") {
+        if (previousNode) previousNode.remove();
+        container && setError(elementId, container, "Verifique su identidad");
+        return;
+      }
+
+      getPolicyByRut(harcodeRut)
         .then(async (response) => {
           console.log(response);
           if (previousNode) previousNode.remove();
-
-          // Confetti
-          // const JSConfetti = await import("js-confetti").then(
-          //     (module) => module.default
-          //   );
-          //   const jsConfetti = new JSConfetti();
-          //   jsConfetti.addConfetti();
         })
         .catch((error: any) => {
           if (!error) return;
           if (previousNode) previousNode.remove();
 
-          const p = document.createElement("p");
-          p.id = elementId;
-          p.style.color = "red";
-          p.innerHTML = "Verifique su identidad";
-          p.style.textAlign = "center";
-
-          container && container.appendChild(p);
+          container &&
+            setError(
+              elementId,
+              container,
+              "Hubo un error al buscar las pólizas"
+            );
         });
     });
   });
+
+  function setError(elementId: string, element: HTMLElement, message: string) {
+    const p = document.createElement("p");
+    p.id = elementId;
+    p.style.color = "red";
+    p.innerHTML = message;
+    p.style.textAlign = "center";
+
+    element && element.appendChild(p);
+  }
+
+  function getCookie(name: string) {
+    let value = `; ${document.cookie}`;
+    let parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+  }
 </script>
