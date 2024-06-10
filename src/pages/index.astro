@@ -20,13 +20,6 @@ if (Astro.request.method === "GET") {
   }
 
   await db.delete(LoginData);
-
-  // Confetti
-  // const JSConfetti = await import("js-confetti").then(
-  //   (module) => module.default
-  // );
-  // const jsConfetti = new JSConfetti();
-  // jsConfetti.addConfetti();
 }
 ---
 
@@ -36,8 +29,8 @@ if (Astro.request.method === "GET") {
       <h2 class="text-4xl">PRUEBAS</h2>
 
       <p class="flex flex-col">
-        <span id="name">Nombre: {name}</span>
-        <span id="token">Token: {token}</span>
+        <span id="name" data-name={name}>Nombre: {name}</span>
+        <span id="token" data-token={token}>Token: {token}</span>
       </p>
 
       <a
@@ -63,6 +56,17 @@ if (Astro.request.method === "GET") {
     const container = document.getElementById("container");
     const loginButton = document.getElementById("login");
     const policyButton = document.getElementById("policy");
+    const datasetName = document.getElementById("name").dataset?.name
+    const datasetToken = document.getElementById("token").dataset?.token
+
+    // Conffeti
+    if(datasetName && datasetToken) {
+      const JSConfetti = await import("js-confetti").then(
+        (module) => module.default
+      );
+      const jsConfetti = new JSConfetti();
+      jsConfetti.addConfetti();      
+    }
 
     loginButton?.addEventListener("click", (e) => {
       e.preventDefault();
