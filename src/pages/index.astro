@@ -50,6 +50,7 @@ if (Astro.request.method === "GET") {
   import { getPolicyByRut } from "../services/getPolicyByRut";
 
   const SSO_NEXT = import.meta.env.PUBLIC_SSO_NEXT;
+  const REDIRECT_URI = import.meta.env.PUBLIC_REDIRECT_URI
 
   document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("container");
@@ -82,7 +83,9 @@ if (Astro.request.method === "GET") {
 
       if (typeof window !== "undefined") {
         loginButton.innerHTML = spinner;
-        window.location.href = SSO_NEXT;
+
+        const url = `${SSO_NEXT}/?redirect_uri=${REDIRECT_URI}`
+        window.location.href = url;
       }
     });
 
