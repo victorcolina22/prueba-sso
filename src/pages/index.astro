@@ -2,7 +2,10 @@
 import { db, LoginData } from "astro:db";
 
 import { Container } from "../components/Container";
+import Link from "../components/Link.astro"
 import Layout from "../layouts/Layout.astro";
+
+import { REDIRECT_URI } from "../constants.ts"
 
 let name = "";
 let token = "";
@@ -32,32 +35,40 @@ if (Astro.request.method === "GET") {
         <span id="token" data-token={token}>Token: {token}</span>
       </p>
 
-      <a
-        id="login"
-        class="min-w-48 p-3 border-[1px] rounded-xl border-gray-500 text-center flex justify-center items-center"
-        href="http://localhost:3000/login">Login</a
-      >
-      <button
-        id="policy"
-        class="min-w-48 p-3 border-[1px] rounded-xl border-gray-500 text-center"
-        >Obtener pólizas</button
-      >
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"asegurado"}>Asegurado</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"corredor"}>Corredor</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"delegado"}>Delegado</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"empresa"}>Empresa</Link>
+      
+      <!-- <button -->
+      <!--   id="policy" -->
+      <!--   class="min-w-48 p-3 border-[1px] rounded-xl border-gray-500 text-center" -->
+      <!--   >Obtener pólizas</button -->
+      <!-- > -->
     </Container>
   </section>
 </Layout>
 
 <script>
   import { getPolicyByRut } from "../services/getPolicyByRut";
-
-  const SSO_NEXT = import.meta.env.PUBLIC_SSO_NEXT;
-  const REDIRECT_URI = import.meta.env.PUBLIC_REDIRECT_URI
+  import { SSO_NEXT } from "../constants.ts"
 
   document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("container");
     const loginButton = document.getElementById("login");
+    const links = document.querySelectorAll("a")
     const policyButton = document.getElementById("policy");
     const datasetName = document.getElementById("name")?.dataset?.name;
     const datasetToken = document.getElementById("token")?.dataset?.token;
+
+    // Disabled button "Pólizas"
+    if(!datasetName && !datasetToken) {
+     policyButton && policyButton.setAttribute("disabled", "true")
+      policyButton && ( policyButton.style.backgroundColor = "#D3D3D3" )
+    } else {
+      policyButton && policyButton.removeAttribute("disabled")
+      policyButton && ( policyButton.style.backgroundColor = "" )
+    }
 
     const spinner = `
       <div role="status">
@@ -78,26 +89,38 @@ if (Astro.request.method === "GET") {
       jsConfetti.addConfetti();
     }
 
-    loginButton?.addEventListener("click", (e) => {
-      e.preventDefault();
+    links.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault()
 
-      if (typeof window !== "undefined") {
-        loginButton.innerHTML = spinner;
+        const redirect = e.target?.dataset.redirect_uri ?? ""
+        const source = e.target?.dataset.source ?? ""
+        const url = `${SSO_NEXT}/?redirect_uri=${redirect}&source=${source}`
 
-        const url = `${SSO_NEXT}/?redirect_uri=${REDIRECT_URI}`
-        window.location.href = url;
-      }
-    });
+        if(typeof window !== "undefined") {
+          e.target.innerHTML = spinner
+          window.location.href = url;
+        }
+      })
+    })
 
     policyButton?.addEventListener("click", async () => {
       const elementId = "error-message";
-      const harcodeRut = "17943944-1";
       const previousNode = document.getElementById(elementId);
 
-      getPolicyByRut(harcodeRut)
+      getPolicyByRut()
         .then(async (response) => {
-          console.log(response);
           if (previousNode) previousNode.remove();
+
+          if(response?.data.length > 0) {
+          const ul = document.createElement("ul")
+            response.data.forEach((policy: any) => {
+              const li = document.createElement("li")
+              li.innerHTML = `póliza: ${policy.idPoliza}`
+              ul.appendChild(li)
+            })
+          container?.appendChild(ul)
+          }
         })
         .catch((error: any) => {
           if (!error) return;
