@@ -9,6 +9,7 @@ import { REDIRECT_URI } from "../constants.ts"
 
 let name = "";
 let token = "";
+let rut = ""
 
 if (Astro.request.method === "POST") {
   const body = await Astro.request.json();
@@ -20,6 +21,7 @@ if (Astro.request.method === "GET") {
   if (data.length > 0) {
     name = data[0].name;
     token = data[0].token;
+    rut = data[0].rut
   }
   await db.delete(LoginData);
 }
@@ -28,18 +30,19 @@ if (Astro.request.method === "GET") {
 <Layout title="Web">
   <section class="flex flex-col items-center justify-center h-screen">
     <Container id="container">
-      <h2 class="text-4xl">PRUEBAS</h2>
+      <h2 class="text-4xl text-center">DEMO SSO</h2>
 
       <p class="flex flex-col">
         <span id="name" data-name={name}>Nombre: {name}</span>
-        <span id="token" data-token={token}>Token: {token}</span>
+        <span id="rut" data-rut={rut}>Rut: {rut}</span>
+        <span id="token" data-token={token}></span>
       </p>
 
-      <Link data-redirect_uri={REDIRECT_URI} data-source={"insured"}>Asegurado</Link>
-      <Link data-redirect_uri={REDIRECT_URI} data-source={"broker"}>Corredor</Link>
-      <Link data-redirect_uri={REDIRECT_URI} data-source={"delegate"}>Delegado</Link>
-      <Link data-redirect_uri={REDIRECT_URI} data-source={"company"}>Empresa</Link>
-      <Link data-redirect_uri={REDIRECT_URI} data-source={"ldap"}>LDAP</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"insured"} data-token={token}>Asegurado</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"broker"} data-token={token}>Corredor</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"delegate"} data-token={token}>Delegado</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"company"} data-token={token}>Empresa</Link>
+      <Link data-redirect_uri={REDIRECT_URI} data-source={"ldap"} data-token={token}>LDAP</Link>
       
       <!-- <button -->
       <!--   id="policy" -->
@@ -56,7 +59,6 @@ if (Astro.request.method === "GET") {
 
   document.addEventListener("DOMContentLoaded", async () => {
     const container = document.getElementById("container");
-    const loginButton = document.getElementById("login");
     const links = document.querySelectorAll("a")
     const policyButton = document.getElementById("policy");
     const datasetName = document.getElementById("name")?.dataset?.name;
@@ -96,7 +98,9 @@ if (Astro.request.method === "GET") {
 
         const redirect = e.target?.dataset.redirect_uri ?? ""
         const source = e.target?.dataset.source ?? ""
-        const url = `${SSO_NEXT}/?redirect_uri=${redirect}&source=${source}`
+        const token = e.target?.dataset.token ?? ""
+
+        const url = `${SSO_NEXT}/?redirect_uri=${redirect}&source=${source}&token=${token}`
 
         if(typeof window !== "undefined") {
           e.target.innerHTML = spinner
